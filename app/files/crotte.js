@@ -86,7 +86,7 @@
 			body.className = classes.join(' ')
 		}
 	}
-	load_local_stylesheet('combined.min.css?gz', 'crottecss');
+	load_local_stylesheet('combined.min.css', 'crottecss');
 
 	var domIsReady=false;
 	console.log("Installing crotty handler");

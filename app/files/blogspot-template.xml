@@ -757,7 +757,7 @@ width: auto;
 }
 ]]>
 </b:template-skin>
-<link rel="stylesheet" type="text/css" href="http://1.cdn-jcayzac.appspot.com/files/combined.min.css?gz" id="crottecss"></link>
+<link rel="stylesheet" type="text/css" href="//cdn-jcayzac.appspot.com/files/combined.min.css" id="crottecss"></link>
 </head>
 <body expr:class='&quot;loading&quot; + data:blog.mobileClass'>
 <script type='text/javascript'>//<![CDATA[
@@ -768,7 +768,7 @@ document.body.className = document.body.className.replace('loading', '');
 //]]></script>
 <!-- crotte code begin -->
 <script type='text/javascript'>//<![CDATA[
-(function() {var D=document;if (!D.getElementById('crotte')){var S=D.createElement('script');S.id='crotte';S.async=true;S.src = "//cdn-jcayzac.appspot.com/files/combined.min.js?gz";D.documentElement.firstChild.appendChild(S)}})();
+(function() {var D=document;if (!D.getElementById('crotte')){var S=D.createElement('script');S.id='crotte';S.async=true;S.src = "//cdn-jcayzac.appspot.com/files/combined.min.js";D.documentElement.firstChild.appendChild(S)}})();
 //]]></script>
 <!-- crotte code end -->
 	<div id="fb-root"></div>
