@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -e
+cd "$(git rev-parse --show-toplevel)"
+FILES="app/files"
+
+gadd() {
+	if [ ! -z "$GIT_EDITOR" ]
+	then
+		echo git add $@
+		git add $@
+	fi
+}
+
+for EXT in js css
+do
+	OUT="combined.min.$EXT"
+	while IFS= read -r -d '' FN
+	do
+		echo >&2 "Minifying $FN"
+		cat "$FN"
+	done < <(find -s "$FILES" -type f -iname "*.$EXT" -not -iname "$OUT" -print0) | \
+	java -jar ${buildout:parts-directory}/yui-compressor/build/yuicompressor-${buildout:yui-compressor-version}.jar --type $EXT -o "$FILES/$OUT"
+	gadd "$FILES/$OUT"
+done
+
+# gzip SVG files
+while IFS= read -r -d '' FN
+do
+	SVGZ="$FN"z
+	echo "gzip -9 <'$FN' >'$SVGZ'"
+	gzip -9 <"$FN" >"$SVGZ"
+	gadd "$SVGZ"
+done < <(find "$FILES" -iname "*.svg" -print0)
+
