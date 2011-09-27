@@ -1,6 +1,6 @@
 (function() {
 	var W=window, D=document;
-	var base = '//barxyzfoocssbaz.googlecode.com/svn/trunk/';
+	var base = 'http://1.cdn-jcayzac.appspot.com/files/';
 
 	var load_script = function(s, cb) {
 		var js, fjs = D.querySelector('script');
@@ -17,17 +17,23 @@
 	};
 
 	var load_stylesheet = function(src,i) {
+		if (D.getElementById(i)) {return}
+		var css=null;
 		if (D.createStyleSheet) {
-			D.createStyleSheet(src);
+			if (D.createStyleSheet(src)) {
+				css = D.createElement('style');
+			}
+			if (!css) {return}
 		}
 		else {
-			var css = D.createElement("link");
+			css = D.createElement("link");
+			if (!css) {return}
 			css.rel  = "stylesheet"
 			css.type = "text/css"
 			css.href = src
-			css.id = i
-			D.querySelector('head').appendChild(css);
 		}
+		css.id = i
+		D.documentElement.firstChild.appendChild(css);
 	};
 
 	var load_local_stylesheet = function(src,i) {
@@ -37,10 +43,10 @@
 	var iframe = function(src, classname) {
 		var e = D.createElement("iframe");
 		var a = {
-	      'src':  src,
-	      'frameborder': '0',
-	      'allowfullscreen': 'allowfullscreen'
-	    };
+		  'src':  src,
+		  'frameborder': '0',
+		  'allowfullscreen': 'allowfullscreen'
+		};
 		for(var x in a) {
 			e.setAttribute(x, a[x]);
 		}
@@ -74,11 +80,14 @@
 	body=D.querySelector('body')
 	if (body) {
 		if (!(body.className || '').match(/\bjs\b/)) {
-		    var classes = (body.className || '').split(/\s+/)
-		    classes.push('js')
-		    body.className = classes.join(' ')
-    	}
-    }
+			var classes = (body.className || '').split(/\s+/)
+			classes.push('js')
+			body.className = classes.join(' ')
+		}
+	}
+	load_local_stylesheet('fonts.css?gz', 'fontscss');
+	load_local_stylesheet('gist.css?gz', 'gistcss');
+	load_local_stylesheet('keep-aspect-ratio.css.css?gz', 'karcss');
 
 	var domIsReady=false;
 	(function(fn) {
@@ -128,10 +137,6 @@
 	})(function() {
 		domIsReady=true;
 
-		if (!D.querySelector('link#mincss')) {
-		    load_local_stylesheet('min.css', 'mincss');
-		}
-
 		// videos
 		subst('youtube', function(e) {
 			return iframe_16x9('//www.youtube.com/embed/' + e.getAttribute('video') + '?hd=1&autohide=1&fs=1&iv_load_policy=3&loop=1&rel=0&showsearch=0& showinfo=0&modestbranding=1&enablejsapi=1', 'youtube');
@@ -149,13 +154,13 @@
 			var code = e.getAttribute('code');
 			var cb = 'on_gist_' + code + '_' + Math.floor(Math.random()*99999999+1);
 			window[cb] = (function(e, code, cb){ return function(x) {
-    			delete window[cb];
+				delete window[cb];
 				var div = D.createElement('div');
 				div.innerHTML = x.div;
 				var pre = div.querySelectorAll('.gist-data');
 				for (var i=0; i<pre.length; i++) {
 					var filename = x.files[i];
-        			if (filename.substr(0, 8) == 'gistfile') {continue};
+					if (filename.substr(0, 8) == 'gistfile') {continue};
 					var link = D.createElement('a');
 					link.href = 'https://raw.github.com/gist/'+code+'/'+filename;
 					link.innerHTML = filename;

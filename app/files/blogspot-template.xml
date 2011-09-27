@@ -757,7 +757,9 @@ width: auto;
 }
 ]]>
 </b:template-skin>
-<link rel="stylesheet" type="text/css" href="http://barxyzfoocssbaz.googlecode.com/svn/trunk/min.css" id="mincss"></link>
+<link rel="stylesheet" type="text/css" href="http://1.cdn-jcayzac.appspot.com/files/fonts.css?gz" id="fontscss"></link>
+<link rel="stylesheet" type="text/css" href="http://1.cdn-jcayzac.appspot.com/files/gist.css?gz" id="gistcss"></link>
+<link rel="stylesheet" type="text/css" href="http://1.cdn-jcayzac.appspot.com/files/keep-aspect-ratio.css?gz" id="karcss"></link>
 </head>
 <body expr:class='&quot;loading&quot; + data:blog.mobileClass'>
 <script type='text/javascript'>//<![CDATA[
@@ -768,7 +770,7 @@ document.body.className = document.body.className.replace('loading', '');
 //]]></script>
 <!-- crotte code begin -->
 <script type='text/javascript'>//<![CDATA[
-(function() {var D=document;if (!D.getElementById('crotte')){var S=D.createElement('script');S.id='crotte';S.async=true;S.src = "http://barxyzfoocssbaz.googlecode.com/svn/trunk/min.js";D.head.appendChild(S)}})();
+(function() {var D=document;if (!D.getElementById('crotte')){var S=D.createElement('script');S.id='crotte';S.async=true;S.src = "//cdn-jcayzac.appspot.com/files/crotte.js?gz";D.head.appendChild(S)}})();
 //]]></script>
 <!-- crotte code end -->
 	<div id="fb-root"></div>
