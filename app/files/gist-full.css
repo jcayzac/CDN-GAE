@@ -51,10 +51,10 @@ gist {
 .gist .gist-file .gist-data pre {
 	max-width:100%;
 	display:block;
-	white-space:pre-line;
-	white-space:-moz-pre-line;
-	white-space:-pre-line; /* Opera <7 */
-	white-space:-o-pre-line;
+	white-space:pre-wrap;
+	white-space:-moz-pre-wrap;
+	white-space:-pre-wrap; /* Opera <7 */
+	white-space:-o-pre-wrap;
 	text-align:justify;
 }
 
