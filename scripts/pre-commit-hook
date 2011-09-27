@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -e
+
+# Unminify files
+cd "$(git rev-parse --show-toplevel)"
+FILES="app/files"
+
+for EXT in js css
+do
+	while IFS= read -r -d '' FN
+	do
+		MINIFIED="${FN%-full.$EXT}.$EXT"
+		if [ -f "$MINIFIED" ]
+		then
+			echo "Unminifying $MINIFIED"
+			cp "$FN" "$MINIFIED"
+			rm "$FN"
+		fi
+	done < <(find "$FILES" -iname "*.${EXT}" -print0)
+done
+
+bin/minify
+
+# gzip SVG files
+while IFS= read -r -d '' FN
+do
+	SVGZ="${FN%.svg}.svgz"
+	gzip -9 <"$FN" >"$SVGZ"
+done < <(find "$FILES" -iname "*.svg" -print0)
+
