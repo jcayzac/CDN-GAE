@@ -1,11 +1,9 @@
 (function() {
-	console.log("Crotte!");
 	var W=window, D=document;
 	var base = '//cdn-jcayzac.appspot.com/files/';
 
 	var load_script = function(s, cb) {
-		var js, fjs = D.querySelector('script');
-		js = D.createElement('script');
+		var js = D.createElement('script');
 		js.async=true;
 		js.src = s;
 		js.onload = js.onreadystatechange = function() {
@@ -14,7 +12,7 @@
 				if (typeof cb === "function") { cb(); }
 			}
 		};
-		fjs.parentNode.insertBefore(js, fjs);
+		D.documentElement.firstChild.appendChild(js);
 	};
 
 	var load_stylesheet = function(src,i) {
@@ -54,7 +52,7 @@
 		e.className = classname;
 		return e;
 	};
-	
+
 	var wrap_16x9 = function(e) {
 		var x = D.createElement('div');
 		x.className = 'keep-aspect-ratio';
@@ -78,18 +76,14 @@
 		};
 	};
 
-	body=D.querySelector('body')
-	if (body) {
-		if (!(body.className || '').match(/\bjs\b/)) {
-			var classes = (body.className || '').split(/\s+/)
-			classes.push('js')
-			body.className = classes.join(' ')
-		}
+	if (!(D.body.className || '').match(/\bjs\b/)) {
+		var classes = (D.body.className || '').split(/\s+/)
+		classes.push('js')
+		D.body.className = classes.join(' ')
 	}
 	load_local_stylesheet('combined.min.css', 'crottecss');
 
 	var domIsReady=false;
-	console.log("Installing crotty handler");
 	(function(fn) {
 		if (D.readyState === "complete") {
 			setTimeout(fn, 1);
@@ -148,13 +142,13 @@
 			return wrap_16x9(e);
 		});
 		// code
-		var gists = D.querySelectorAll('gist');
+		var gists = D.getElementsByTagName('gist');
 		for (var gi=0; gi<gists.length; gi++) {
 			var e = gists[gi];
 			var code = e.getAttribute('code');
 			var cb = 'on_gist_' + code + '_' + Math.floor(Math.random()*99999999+1);
 			window[cb] = (function(e, code, cb){ return function(x) {
-				delete window[cb];
+				window[cb]=null;
 				var div = D.createElement('div');
 				div.innerHTML = x.div;
 				var pre = div.querySelectorAll('.gist-data');

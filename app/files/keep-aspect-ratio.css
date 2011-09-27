@@ -28,7 +28,7 @@
 	z-index:-1000 !important;
 }
 
-.keep-aspect-ratio *:last-child {
+.keep-aspect-ratio *:first-child + * {
 	z-index:1 !important;
 	position:absolute !important;
 	top:0 !important;

@@ -10,7 +10,10 @@ xmlns:data='http://www.google.com/2005/gml/data'
 xmlns:expr='http://www.google.com/2005/gml/expr'
 >
 <head>
-<meta content='IE=Edge' http-equiv='X-UA-Compatible' />
+<meta content='IE=edge' http-equiv='X-UA-Compatible' />
+<!--[if lt IE 8]>
+<meta http-equiv="refresh" content="0;url=http://update.microsoft.com/"></meta>
+<![endif]-->
 <b:if cond='data:blog.isMobile'>
 	<meta content='width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0' name='viewport' />
 	<b:else/>
@@ -20,6 +23,9 @@ xmlns:expr='http://www.google.com/2005/gml/expr'
 <meta content='noarchive,noodp,noimageindex' name='robots' />
 <b:include data='blog' name='all-head-content'/>
 <title><data:blog.pageTitle/></title>
+<!--[if lt IE 9]>
+<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
 <b:skin><![CDATA[/*
 -----------------------------------------------
 Blogger Template Style
@@ -757,9 +763,17 @@ width: auto;
 }
 ]]>
 </b:template-skin>
+<script type='text/javascript'>//<![CDATA[
+var i, e = ['gists', 'youtube', 'vimeo'];
+for (i in e) {document.createElement(e[i])}
+//]]></script>
 <link rel="stylesheet" type="text/css" href="//cdn-jcayzac.appspot.com/files/combined.min.css" id="crottecss"></link>
 </head>
 <body expr:class='&quot;loading&quot; + data:blog.mobileClass'>
+<!--[if lt IE 9]><div class="ie ie8"><![endif]-->
+<!--[if IE 9]><div class="ie ie9"><![endif]-->
+<!--[if gt IE 9]><div class="ie"><![endif]-->
+<!--[if !IE]><!--><div class="no-ie"><!--<![endif]-->
 <script type='text/javascript'>//<![CDATA[
 document.body.className += ' js';
 window.setTimeout(function() {
@@ -1677,7 +1691,7 @@ document.body.className = document.body.className.replace('loading', '');
 	  _ls("//platform.twitter.com/widgets.js", 'twitter-jssdk');
 		//]]>
 	</script>
-</body>
+</div></body>
 
 <macro:includable id='sections' var='col'>
 	<macro:if cond='data:col.num == 0'>
