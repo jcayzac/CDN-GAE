@@ -1,6 +1,7 @@
 (function() {
+	console.log("Crotte!");
 	var W=window, D=document;
-	var base = 'http://1.cdn-jcayzac.appspot.com/files/';
+	var base = '//cdn-jcayzac.appspot.com/files/';
 
 	var load_script = function(s, cb) {
 		var js, fjs = D.querySelector('script');
@@ -88,6 +89,7 @@
 	load_local_stylesheet('combined.min.css?gz', 'crottecss');
 
 	var domIsReady=false;
+	console.log("Installing crotty handler");
 	(function(fn) {
 		if (D.readyState === "complete") {
 			setTimeout(fn, 1);

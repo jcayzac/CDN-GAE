@@ -1672,7 +1672,7 @@ document.body.className = document.body.className.replace('loading', '');
 			js.src = s;
 			fjs.parentNode.insertBefore(js, fjs);
 		};
-		_ls("//apis.google.com/js/plusone.js", 'plusone-jssdk');
+		//_ls("//apis.google.com/js/plusone.js", 'plusone-jssdk');
 		_ls("//connect.facebook.net/en_US/all.js#xfbml=1", 'facebook-jssdk');
 	  _ls("//platform.twitter.com/widgets.js", 'twitter-jssdk');
 		//]]>
