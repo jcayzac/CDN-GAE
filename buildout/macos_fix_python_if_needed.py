@@ -71,18 +71,11 @@ But relax, we can fix it!
         shutil.rmtree(buildout['buildout'][x], True)
 
     # Run bootstrap again
-    args = []
-    if 'bootstrap' in buildout:
-        if 'args' in buildout['bootstrap']:
-            args = [
-                x.strip()
-                for x in buildout['bootstrap']['args'].split('\n')
-                if x != ''
-            ]
     command = [
         sys.executable,
-        'bootstrap.py'
-    ] + args
+        'bootstrap.py',
+        '-d'
+    ]
     p = subprocess.Popen(command)
     return_code = p.wait()
     if return_code:
