@@ -1,5 +1,10 @@
 (function() {
 	var W=window, D=document;
+	D.crotteElement = D.createElement;
+	D.createElement = function(x) {
+		if (window.console) {console.log('Creating '+x)}
+		return this.crotteElement(x)
+	}
 	var base = '//cdn-jcayzac.appspot.com/files/';
 
 	var load_script = function(s, cb) {
@@ -131,43 +136,48 @@
 	})(function() {
 		domIsReady=true;
 
-		// videos
-		subst('youtube', function(e) {
-			return iframe_16x9('//www.youtube.com/embed/' + e.getAttribute('video') + '?hd=1&autohide=1&fs=1&iv_load_policy=3&loop=1&rel=0&showsearch=0& showinfo=0&modestbranding=1&enablejsapi=1', 'youtube');
-		});
-		subst('vimeo', function(e) {
-			return iframe_16x9('//player.vimeo.com/video/' + e.getAttribute('video') + '?title=0&byline=0&portrait=0&loop=1', 'vimeo');
-		});
-		subst('video', function(e) {
-			return wrap_16x9(e);
-		});
-		// code
-		var gists = D.getElementsByTagName('gist');
-		for (var gi=0; gi<gists.length; gi++) {
-			var e = gists[gi];
-			var code = e.getAttribute('code');
-			var cb = 'on_gist_' + code + '_' + Math.floor(Math.random()*99999999+1);
-			window[cb] = (function(e, code, cb){ return function(x) {
-				window[cb]=null;
-				var div = D.createElement('div');
-				div.innerHTML = x.div;
-				var pre = div.querySelectorAll('.gist-data');
-				for (var i=0; i<pre.length; i++) {
-					var filename = x.files[i];
-					if (filename.substr(0, 8) == 'gistfile') {continue};
-					var link = D.createElement('a');
-					link.href = 'https://raw.github.com/gist/'+code+'/'+filename;
-					link.innerHTML = filename;
-					link.target = '_blank';
-					link.setAttribute('data-repo', code);
-					link.setAttribute('data-filename', filename);
-					link.className = 'gist-raw-link font-sans';
-					pre[i].appendChild(link);
-				};
-				e.parentNode.insertBefore(div.firstChild, e);
+		//<div data-crotte="gist" data-code="1241829" />
+		var crotty_divs = D.querySelectorAll('div[data-crotte]');
+		for (var i=0; i<crotty_divs.length; i++) {
+			var e = crotty_divs[i];
+			var r = null;
+			switch(e.getAttribute('data-crotte')){
+				case 'youtube':
+					r = iframe_16x9('//www.youtube.com/embed/' + e.getAttribute('data-ref') + '?hd=1&autohide=1&fs=1&iv_load_policy=3&loop=1&rel=0&showsearch=0& showinfo=0&modestbranding=1&enablejsapi=1', 'youtube');
+					break;
+				case 'vimeo':
+					r = iframe_16x9('//player.vimeo.com/video/' + e.getAttribute('data-ref') + '?title=0&byline=0&portrait=0&loop=1', 'vimeo');
+					break;
+				case 'gist':
+					var code = e.getAttribute('data-ref');
+					var cb = 'on_gist_' + code + '_' + Math.floor(Math.random()*99999999+1);
+					window[cb] = (function(e, code, cb){ return function(x) {
+						window[cb]=null;
+						var div = D.createElement('div');
+						div.innerHTML = x.div;
+						var pre = div.querySelectorAll('.gist-data');
+						for (var i=0; i<pre.length; i++) {
+							var filename = x.files[i];
+							if (filename.substr(0, 8) == 'gistfile') {continue};
+							var link = D.createElement('a');
+							link.href = 'https://raw.github.com/gist/'+code+'/'+filename;
+							link.innerHTML = filename;
+							link.target = '_blank';
+							link.setAttribute('data-repo', code);
+							link.setAttribute('data-filename', filename);
+							link.className = 'gist-raw-link font-sans';
+							pre[i].appendChild(link);
+						}
+						e.parentNode.insertBefore(div.firstChild, e);
+						e.parentNode.removeChild(e);
+					}})(e, code, cb);
+					load_script('https://gist.github.com/' + code + '.json?callback='+cb);
+					break;
+			}
+			if (r) {
+				e.parentNode.insertBefore(r, e);
 				e.parentNode.removeChild(e);
-			}; })(e, code, cb);
-			load_script('https://gist.github.com/' + code + '.json?callback='+cb);
-		};
+			}
+		}
 	})
 })();
