@@ -1,0 +1,10 @@
+body,#header,#content,#footer{width:100%}
+#main {margin:0 auto}
+#header,#content,#footer{clear:both}
+#header,#content,#colright,#col2,#footer{float:left}
+#content,#colright,#col1wrap,#col1,#col2{position:relative}
+#content,#col1{overflow:hidden}
+#colright{width:200%}
+#col1wrap{float:right;width:50%}
+#col1{right:100%}
+#footer{text-align:center}
