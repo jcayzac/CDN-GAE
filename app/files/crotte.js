@@ -1,166 +1,177 @@
-(function() {
-	var W=window, D=document;
-	D.crotteElement = D.createElement;
-	D.createElement = function(x) {
-		if (window.console) {console.log('Creating '+x)}
-		return this.crotteElement(x)
-	}
-	var base = '//cdn-jcayzac.appspot.com/files/';
-
-	var load_script = function(s, cb) {
-		var js = D.createElement('script');
-		js.async=true;
-		js.src = s;
-		js.onload = js.onreadystatechange = function() {
-			if (!js.readyState || ( /loaded|complete/ ).test(js.readyState)) {
-				js.onload = js.onreadystatechange = null;
-				if (typeof cb === "function") { cb(); }
+/*jslint devel: true, browser: true, unparam: false, forin: true, plusplus: true, maxerr: 50, indent: 4 */
+(function () {
+	"use strict";
+	var F = false,
+		domIsReady = F,
+		base = '//cdn-jcayzac.appspot.com/files/',
+		store = function (k, v) {
+			try {
+				localStorage[k] = JSON.stringify(
+					{
+						value: v,
+						timestamp: (new Date()).getTime()
+					}
+				);
+			} catch (e) { }
+		},
+		retrieve = function (k) {
+			try {
+				var r = JSON.parse(localStorage[k]);
+				if ((new Date()).getTime() - r.timestamp < 3600000000) {
+					return r.value;
+				}
+				localStorage[k] = null;
+			} catch (e) { }
+			return null;
+		},
+		load_script = function (s, cb) {
+			var js = document.createElement('script');
+			js.src = s;
+			js.onload = js.onreadystatechange = function () {
+				if (!js.readyState || (/loaded|complete/).test(js.readyState)) {
+					js.onload = js.onreadystatechange = null;
+					if (typeof cb === "function") {
+						cb();
+					}
+				}
+			};
+			document.documentElement.firstChild.appendChild(js);
+		},
+		load_stylesheet = function (src, i) {
+			if (document.getElementById(i)) {
+				return undefined;
 			}
-		};
-		D.documentElement.firstChild.appendChild(js);
-	};
-
-	var load_stylesheet = function(src,i) {
-		if (D.getElementById(i)) {return}
-		var css=null;
-		if (D.createStyleSheet) {
-			if (D.createStyleSheet(src)) {
-				css = D.createElement('style');
+			var css = null;
+			if (document.createStyleSheet) {
+				if (document.createStyleSheet(src)) {
+					css = document.createElement('style');
+				}
+			} else {
+				css = document.createElement("link");
+				if (css) {
+					css.rel  = "stylesheet";
+					css.type = "text/css";
+					css.href = src;
+				}
 			}
-			if (!css) {return}
-		}
-		else {
-			css = D.createElement("link");
-			if (!css) {return}
-			css.rel  = "stylesheet"
-			css.type = "text/css"
-			css.href = src
-		}
-		css.id = i
-		D.documentElement.firstChild.appendChild(css);
-	};
-
-	var load_local_stylesheet = function(src,i) {
-		load_stylesheet(base+src,i);
-	};
-
-	var iframe = function(src, classname) {
-		var e = D.createElement("iframe");
-		var a = {
-		  'src':  src,
-		  'frameborder': '0',
-		  'allowfullscreen': 'allowfullscreen'
+			if (css) {
+				css.id = i;
+				document.documentElement.firstChild.appendChild(css);
+			}
+		},
+		load_local_stylesheet = function (src, i) {
+			load_stylesheet(base + src, i);
+		},
+		iframe = function (src, classname) {
+			var e = document.createElement("iframe");
+			e.src = src;
+			e.frameborder = 0;
+			e.allowfullscreen = 1;
+			e.className = classname;
+			return e;
+		},
+		wrap_16x9 = function (e) {
+			var x = document.createElement('div'),
+				i = document.createElement('img');
+			x.className = 'keep-aspect-ratio';
+			i.src = base + '16x9.png';
+			x.appendChild(i);
+			x.appendChild(e);
+			return x;
+		},
+		iframe_16x9 = function (s, c) {
+			return wrap_16x9(iframe(s, c));
 		};
-		for(var x in a) {
-			e.setAttribute(x, a[x]);
+
+	(function () {
+		if (!(document.body.className || '').match(/\bjs\b/)) {
+			var classes = (document.body.className || '').split(/\s+/);
+			classes.push('js');
+			document.body.className = classes.join(' ');
 		}
-		e.className = classname;
-		return e;
-	};
+		load_local_stylesheet('combined.min.css', 'crottecss');
+	}());
 
-	var wrap_16x9 = function(e) {
-		var x = D.createElement('div');
-		x.className = 'keep-aspect-ratio';
-		var img = D.createElement('img');
-		img.setAttribute('src', base+'16x9.png');
-		x.appendChild(img);
-		x.appendChild(e);
-		return x;
-	};
-
-	var iframe_16x9 = function(s, c) {
-		return wrap_16x9(iframe(s, c));
-	};
-
-	var subst=function(sel, fn) {
-		var elems = D.querySelectorAll(sel);
-		for (var i=0; i<elems.length; i++) {
-			var e = elems[i], parent = e.parentNode;
-			parent.insertBefore(fn(e), e);
-			parent.removeChild(e);
-		};
-	};
-
-	if (!(D.body.className || '').match(/\bjs\b/)) {
-		var classes = (D.body.className || '').split(/\s+/)
-		classes.push('js')
-		D.body.className = classes.join(' ')
-	}
-	load_local_stylesheet('combined.min.css', 'crottecss');
-
-	var domIsReady=false;
-	(function(fn) {
-		if (D.readyState === "complete") {
-			setTimeout(fn, 1);
-		}
-		else if (D.addEventListener) {
-			var x;
-			x=function() {
-				D.removeEventListener("DOMContentLoaded", x, false);
+	(function (fn) {
+		var f = 'DOMContentLoaded',
+			o = 'onreadystatechange',
+			c = 'complete',
+			x,
+			toplevel = false,
+			sc;
+		if (document.readyState === c) {
+			window.setTimeout(fn, 1);
+		} else if (document.addEventListener) {
+			x = function () {
+				document.removeEventListener(f, x, F);
 				fn();
 			};
-			D.addEventListener("DOMContentLoaded", x, false);
-			W.addEventListener("load", fn, false);
-		}
-		else if (D.attachEvent) {
-			var x;
-			x=function() {
-				if (D.readyState === "complete" ) {
-					D.detachEvent("onreadystatechange", x);
+			document.addEventListener(f, x, F);
+			window.addEventListener("load", fn, F);
+		} else if (document.attachEvent) {
+			x = function () {
+				if (document.readyState === c) {
+					document.detachEvent(o, x);
 					fn();
 				}
 			};
-			D.attachEvent("onreadystatechange", x);
-			W.attachEvent("onload", fn);
-			var toplevel = false;
+			document.attachEvent(o, x);
+			window.attachEvent("onload", fn);
 			try {
-				toplevel = W.frameElement == null;
-			} catch(e) {}
-			if ( D.documentElement.doScroll && toplevel ) {
-				var sc;
-				sc=function() {
+				toplevel = !window.frameElement;
+			} catch (e) { }
+			if (document.documentElement.doScroll && toplevel) {
+				sc = function () {
 					if (domIsReady) {
-						return;
+						return undefined;
 					}
 					try {
-						D.documentElement.doScroll("left");
-					} catch(e) {
-						setTimeout( sc, 1 );
-						return;
+						document.documentElement.doScroll("left");
+					} catch (e) {
+						window.setTimeout(sc, 1);
+						return undefined;
 					}
 					fn();
-				}
+				};
 				sc();
 			}
 		}
-	})(function() {
-		domIsReady=true;
+	}(function () {
+		if (domIsReady) {
+			return undefined;
+		}
+		domIsReady = true;
+		var crotty_divs = document.querySelectorAll('div[data-crotte]'),
+			i,
+			e,
+			r,
+			code,
+			cb,
+			cached,
+			create_gist_handler = function (e, code, cb, cached) {
+				return function (x) {
+					var pre,
+						div,
+						i,
+						filename,
+						link;
+					window[cb] = null;
 
-		//<div data-crotte="gist" data-code="1241829" />
-		var crotty_divs = D.querySelectorAll('div[data-crotte]');
-		for (var i=0; i<crotty_divs.length; i++) {
-			var e = crotty_divs[i];
-			var r = null;
-			switch(e.getAttribute('data-crotte')){
-				case 'youtube':
-					r = iframe_16x9('//www.youtube.com/embed/' + e.getAttribute('data-ref') + '?hd=1&autohide=1&fs=1&iv_load_policy=3&loop=1&rel=0&showsearch=0& showinfo=0&modestbranding=1&enablejsapi=1', 'youtube');
-					break;
-				case 'vimeo':
-					r = iframe_16x9('//player.vimeo.com/video/' + e.getAttribute('data-ref') + '?title=0&byline=0&portrait=0&loop=1', 'vimeo');
-					break;
-				case 'gist':
-					var code = e.getAttribute('data-ref');
-					var cb = 'on_gist_' + code + '_' + Math.floor(Math.random()*99999999+1);
-					window[cb] = (function(e, code, cb){ return function(x) {
-						window[cb]=null;
-						var div = D.createElement('div');
-						div.innerHTML = x.div;
-						var pre = div.querySelectorAll('.gist-data');
-						for (var i=0; i<pre.length; i++) {
-							var filename = x.files[i];
-							if (filename.substr(0, 8) == 'gistfile') {continue};
-							var link = D.createElement('a');
-							link.href = 'https://raw.github.com/gist/'+code+'/'+filename;
+					if (!x.div) {
+						return undefined;
+					}
+					if (!cached) {
+						store('gist-' + code, x);
+					}
+
+					div = document.createElement('div');
+					div.innerHTML = x.div;
+					pre = div.querySelectorAll('.gist-data');
+					for (i = 0; i < pre.length; i++) {
+						filename = x.files[i];
+						if (filename.substr(0, 8) !== 'gistfile') {
+							link = document.createElement('a');
+							link.href = 'https://raw.github.com/gist/' + code + '/' + filename;
 							link.innerHTML = filename;
 							link.target = '_blank';
 							link.setAttribute('data-repo', code);
@@ -168,16 +179,40 @@
 							link.className = 'gist-raw-link font-sans';
 							pre[i].appendChild(link);
 						}
-						e.parentNode.insertBefore(div.firstChild, e);
-						e.parentNode.removeChild(e);
-					}})(e, code, cb);
-					load_script('https://gist.github.com/' + code + '.json?callback='+cb);
-					break;
+					}
+					e.parentNode.insertBefore(div.firstChild, e);
+					e.parentNode.removeChild(e);
+				};
+			};
+
+		for (i = 0; i < crotty_divs.length; i++) {
+			e = crotty_divs[i];
+			r = null;
+			switch (e.getAttribute('data-crotte')) {
+			case 'youtube':
+				r = iframe_16x9('//www.youtube.com/embed/' + e.getAttribute('data-ref') + '?hd=1&autohide=1&fs=1&iv_load_policy=3&loop=1&rel=0&showsearch=0& showinfo=0&modestbranding=1', 'youtube');
+				break;
+			case 'vimeo':
+				r = iframe_16x9('//player.vimeo.com/video/' + e.getAttribute('data-ref') + '?title=0&byline=0&portrait=0&loop=1', 'vimeo');
+				break;
+			case 'gist':
+				code = e.getAttribute('data-ref');
+				cb = 'on_gist_' + code + '_' + Math.floor(Math.random() * 99999999 + 1);
+				cached = retrieve('gist-' + code);
+				window[cb] = create_gist_handler(e, code, cb, cached);
+
+				if (cached) {
+					window[cb](cached);
+				} else {
+					load_script('https://gist.github.com/' + code + '.json?callback=' + cb);
+				}
+				break;
 			}
 			if (r) {
 				e.parentNode.insertBefore(r, e);
 				e.parentNode.removeChild(e);
 			}
 		}
-	})
-})();
+	}));
+
+}());

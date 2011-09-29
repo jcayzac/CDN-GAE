@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 set -e
+
+which java >/dev/null 2>&1
+
 cd "$(git rev-parse --show-toplevel)"
 FILES="app/files"
 
@@ -11,7 +14,20 @@ gadd() {
 	fi
 }
 
-for EXT in js css
+YUI_COMPRESSOR_EXT="css js"
+
+if which node >/dev/null 2>&1
+then
+	YUI_COMPRESSOR_EXT="css"
+	OUT="combined.min.js"
+	while IFS= read -r -d '' FN
+	do
+	done < <(find -s "$FILES" -type f -iname "*.js" -not -iname "$OUT" -print0) | \
+	uglify-js/bin/uglifyjs -nc --unsafe --inline-script --lift-vars -o "$FILES/$OUT"
+	gadd "$FILES/$OUT"
+fi
+
+for EXT in $YUI_COMPRESSOR_EXT
 do
 	OUT="combined.min.$EXT"
 	while IFS= read -r -d '' FN
