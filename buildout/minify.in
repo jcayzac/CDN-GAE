@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 set -e
 
+export PATH=${nodejs:path}:$PATH
 which java >/dev/null 2>&1
 
-cd "$(git rev-parse --show-toplevel)"
+cd "${buildout:directory}"
 FILES="app/files"
 
 gadd() {
+	# Hack: only add modified files if we're running in the pre-commit hook
 	if [ ! -z "$GIT_EDITOR" ]
 	then
 		echo git add $@
@@ -14,37 +16,55 @@ gadd() {
 	fi
 }
 
-YUI_COMPRESSOR_EXT="css js"
+rall() {
+	CMD="$1"
+	shift
+	while IFS= read -r -d '' FN; do $CMD "$FN" $@; done
+}
 
-if which node >/dev/null 2>&1
-then
-	YUI_COMPRESSOR_EXT="css"
-	OUT="combined.min.js"
-	while IFS= read -r -d '' FN
-	do
-	done < <(find -s "$FILES" -type f -iname "*.js" -not -iname "$OUT" -print0) | \
-	uglify-js/bin/uglifyjs -nc --unsafe --inline-script --lift-vars -o "$FILES/$OUT"
-	gadd "$FILES/$OUT"
-fi
+cat_one() {
+	echo >&2 "  Processing $1 ($(stat -f '%Uz' "$1") B)"
+	cat "$1"
+}
 
-for EXT in $YUI_COMPRESSOR_EXT
-do
-	OUT="combined.min.$EXT"
-	while IFS= read -r -d '' FN
-	do
-		echo >&2 "Minifying $FN"
-		cat "$FN"
-	done < <(find -s "$FILES" -type f -iname "*.$EXT" -not -iname "$OUT" -print0) | \
-	java -jar ${buildout:parts-directory}/yui-compressor/build/yuicompressor-${buildout:yui-compressor-version}.jar --type $EXT -o "$FILES/$OUT"
-	gadd "$FILES/$OUT"
-done
+cat_all_but() {
+    EXT="$1"
+    OUT="$2"
+	rall cat_one < <(find -s "$FILES" -type f -iname "*.$EXT" -not -iname "$OUT" -print0)
+}
+
+echo "Scripts:"
+cat_all_but js '*.min.js' | uglify-js/bin/uglifyjs -nc --unsafe --inline-script --lift-vars -o "$FILES/combined.min.js"
+echo "Created $FILES/combined.min.js ($(stat -f '%Uz' "$FILES/combined.min.js") B)"
+gadd "$FILES/combined.min.js"
+echo
+
+echo "Stylesheets:"
+cat_all_but css '*.min.css' | java -jar ${buildout:parts-directory}/yui-compressor/build/yuicompressor-${buildout:yui-compressor-version}.jar --type css -o "$FILES/combined.min.css"
+echo "Created $FILES/combined.min.css ($(stat -f '%Uz' "$FILES/combined.min.css") B)"
+gadd "$FILES/combined.min.css"
+echo
 
 # gzip SVG files
-while IFS= read -r -d '' FN
-do
-	SVGZ="$FN"z
-	echo "gzip -9 <'$FN' >'$SVGZ'"
-	gzip -9 <"$FN" >"$SVGZ"
+echo "SVG images:"
+svg2svgz() {
+	SVGZ="$1"z
+	gzip -9 <"$1" >"$SVGZ"
 	gadd "$SVGZ"
-done < <(find "$FILES" -iname "*.svg" -print0)
+	echo "$1 ($(stat -f '%Uz' "$1") B) --> $SVGZ ($(stat -f '%Uz' "$SVGZ") B)"
+}
+rall svg2svgz < <(find "$FILES" -iname "*.svg" -print0)
+echo
 
+# Optimize PNG files
+echo "PNG and GIF images:"
+png_optim() {
+	BASE="$(echo "$1" | sed 's|\.[^\.]*$||')"
+	OUT="$BASE".min.png
+	${buildout:parts-directory}/optipng/bin/optipng -quiet -o7 -out "$OUT" "$1" || true
+	gadd "$OUT"
+	echo "  $1 ($(stat -f '%Uz' "$1") B) --> $OUT ($(stat -f '%Uz' "$OUT") B)"
+}
+rall png_optim < <(find -s "$FILES" -type f -iname "*.png" -not -iname "*.min.png" -print0)
+rall png_optim < <(find -s "$FILES" -type f -iname "*.gif" -print0)
+echo

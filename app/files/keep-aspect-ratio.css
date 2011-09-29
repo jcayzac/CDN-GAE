@@ -1,10 +1,13 @@
+.keep-aspect-ratio.youtube {
+	min-width:240px !important;
+	max-width:1280px !important;
+}
+
 .keep-aspect-ratio,
 .keep-aspect-ratio * {
 	border:0 !important;
 	padding:0 !important;
 	display:block !important;
-	min-width:240px !important;
-	max-width:1280px !important;
 }
 
 .keep-aspect-ratio {

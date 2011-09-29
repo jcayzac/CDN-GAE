@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -e
+
+export PATH=${nodejs:path}:${buildout:directory}/lib/node-jslint/bin:$PATH
+export NODE_PATH=${buildout:directory}/lib/abbrev/lib:${buildout:directory}/lib/nopt/lib:${buildout:directory}/lib/node-jslint/lib
+
+cd "${buildout:directory}"
+FILES="app/files"
+
+rall() {
+	CMD="$1"
+	shift
+	while IFS= read -r -d '' FN; do $CMD "$FN" $@; done
+}
+
+lint_one() {
+	echo >&2 "Processing $1"
+	jslint.js "$1"
+}
+
+rall lint_one < <(find -s "$FILES" -type f -iname "*.js" -not -iname "*.min.js" -print0)

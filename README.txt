@@ -7,6 +7,7 @@ Steps to get it up and running:
 2/ Fill app/files with whatever you want to serve.
 3/ python2.5 bootstrap -d
 4/ bin/buildout
-5/ bin/minify
-6/ bin/appcfg update app
+5/ bin/verify
+6/ bin/minify
+7/ bin/appcfg update app
 
