@@ -36,7 +36,7 @@ cat_all_but() {
 }
 
 echo "Scripts:"
-cat_all_but js '*.min.js' | lib/uglify-js/bin/uglifyjs -nc --unsafe --inline-script --lift-vars -o "$FILES/combined.min.js"
+cat_all_but js '*.min.js' | uglifyjs -nc --unsafe --inline-script --lift-vars -o "$FILES/combined.min.js"
 echo "Created $FILES/combined.min.js ($(stat -f '%Uz' "$FILES/combined.min.js") B)"
 gadd "$FILES/combined.min.js"
 echo
