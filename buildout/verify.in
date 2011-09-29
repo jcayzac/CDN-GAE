@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-export PATH=${nodejs:path}:${buildout:directory}/lib/node-jslint/bin:$PATH
-export NODE_PATH=${buildout:directory}/lib/abbrev/lib:${buildout:directory}/lib/nopt/lib:${buildout:directory}/lib/node-jslint/lib
+export PATH=${nodejs:path}:${buildout:directory}/lib/node-jslint-strict/bin:$PATH
+export NODE_PATH=${buildout:directory}/lib/node-jslint-strict
 
 cd "${buildout:directory}"
 FILES="app/files"
@@ -15,7 +15,7 @@ rall() {
 
 lint_one() {
 	echo >&2 "Processing $1"
-	jslint.js "$1"
+	jslint "$1"
 }
 
 rall lint_one < <(find -s "$FILES" -type f -iname "*.js" -not -iname "*.min.js" -print0)

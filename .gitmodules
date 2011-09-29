@@ -1,12 +1,6 @@
-[submodule "lib/node-jslint"]
-	path = lib/node-jslint
-	url = git://github.com/reid/node-jslint.git
 [submodule "lib/uglify-js"]
 	path = lib/uglify-js
 	url = git://github.com/mishoo/UglifyJS.git
-[submodule "lib/nopt"]
-	path = lib/nopt
-	url = git://github.com/isaacs/nopt.git
-[submodule "lib/abbrev"]
-	path = lib/abbrev
-	url = git://github.com/isaacs/abbrev-js.git
+[submodule "lib/node-jslint-strict"]
+	path = lib/node-jslint-strict
+	url = git://github.com/jcayzac/node-jslint-strict.git

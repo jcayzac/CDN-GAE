@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-export PATH=${nodejs:path}:$PATH
+export PATH=${nodejs:path}:${buildout:directory}/lib/uglify-js/bin:$PATH
+export NODE_PATH=${buildout:directory}/lib/uglify-js
+
 which java >/dev/null 2>&1
 
 cd "${buildout:directory}"
