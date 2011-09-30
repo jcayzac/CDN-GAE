@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 set -e
 
-export PATH=${nodejs:path}:${buildout:directory}/lib/uglify-js/bin:$PATH
+export PATH=${nodejs:path}:${buildout:directory}/lib/uglify-js/bin:${buildout:directory}/lib/sass/bin:$PATH
 export NODE_PATH=${buildout:directory}/lib/uglify-js
 
 which java >/dev/null 2>&1
 
 cd "${buildout:directory}"
+SRC="app/src"
 FILES="app/files"
 
 gadd() {
@@ -24,49 +25,73 @@ rall() {
 	while IFS= read -r -d '' FN; do $CMD "$FN" $@; done
 }
 
+# SASS and SCSS
+sass_one() {
+    echo >&2 "Processing $1"
+    OUT="$(echo "$1" | sed -e 's|\.[^\.]*$||').compiled.css"
+    sass -C --unix-newlines "$1" "$OUT"
+	echo >&2 "  Created intermediate file $OUT"
+}
+
+scss_one() {
+    echo >&2 "Processing $1"
+    OUT="$(echo "$1" | sed -e 's|\.[^\.]*$||').compiled.css"
+    scss -C --unix-newlines "$1" "$OUT"
+	echo >&2 "  Created intermediate file $OUT"
+}
+
+if which ruby >/dev/null 2>&1
+then
+    echo "SASS/SCSS:"
+    rall sass_one < <(find -s "$SRC" -type f -iname "*.sass" -not -iname "_*" -print0)
+    rall scss_one < <(find -s "$SRC" -type f -iname "*.scss" -not -iname "_*" -print0)
+    echo
+fi
+
+# Scripts and CSS
 cat_one() {
 	echo >&2 "  Processing $1 ($(stat -f '%Uz' "$1") B)"
 	cat "$1"
 }
 
-cat_all_but() {
+cat_all() {
     EXT="$1"
-    OUT="$2"
-	rall cat_one < <(find -s "$FILES" -type f -iname "*.$EXT" -not -iname "$OUT" -print0)
+	rall cat_one < <(find -s "$SRC" -type f -iname "*.$EXT" -print0)
 }
 
 echo "Scripts:"
-cat_all_but js '*.min.js' | uglifyjs -nc --unsafe --inline-script --lift-vars -o "$FILES/combined.min.js"
+cat_all js | uglifyjs -nc --unsafe --inline-script --lift-vars -o "$FILES/combined.min.js"
 echo "Created $FILES/combined.min.js ($(stat -f '%Uz' "$FILES/combined.min.js") B)"
 gadd "$FILES/combined.min.js"
 echo
 
 echo "Stylesheets:"
-cat_all_but css '*.min.css' | java -jar ${buildout:parts-directory}/yui-compressor/build/yuicompressor-${buildout:yui-compressor-version}.jar --type css -o "$FILES/combined.min.css"
+cat_all css | java -jar ${buildout:parts-directory}/yui-compressor/build/yuicompressor-${buildout:yui-compressor-version}.jar --type css -o "$FILES/combined.min.css"
 echo "Created $FILES/combined.min.css ($(stat -f '%Uz' "$FILES/combined.min.css") B)"
 gadd "$FILES/combined.min.css"
 echo
 
+find "$SRC" -type f -iname "*.compiled.css" -delete
+
 # gzip SVG files
 echo "SVG images:"
 svg2svgz() {
-	SVGZ="$1"z
-	gzip -9 <"$1" >"$SVGZ"
-	gadd "$SVGZ"
-	echo "$1 ($(stat -f '%Uz' "$1") B) --> $SVGZ ($(stat -f '%Uz' "$SVGZ") B)"
+    OUT="$(echo "$1" | sed -e 's|\.[^\.]*$||' -e "s|$SRC|$FILES|").svgz"
+	gzip -9 <"$1" >"$OUT"
+	gadd "$OUT"
+	echo "$1 ($(stat -f '%Uz' "$1") B) --> $OUT ($(stat -f '%Uz' "$OUT") B)"
 }
-rall svg2svgz < <(find "$FILES" -iname "*.svg" -print0)
+rall svg2svgz < <(find "$SRC" -iname "*.svg" -print0)
 echo
 
 # Optimize PNG files
 echo "PNG and GIF images:"
 png_optim() {
-	BASE="$(echo "$1" | sed 's|\.[^\.]*$||')"
-	OUT="$BASE".min.png
+    OUT="$(echo "$1" | sed -e 's|\.[^\.]*$||' -e "s|$SRC|$FILES|").png"
 	${buildout:parts-directory}/optipng/bin/optipng -quiet -o7 -out "$OUT" "$1" || true
 	gadd "$OUT"
 	echo "  $1 ($(stat -f '%Uz' "$1") B) --> $OUT ($(stat -f '%Uz' "$OUT") B)"
 }
-rall png_optim < <(find -s "$FILES" -type f -iname "*.png" -not -iname "*.min.png" -print0)
-rall png_optim < <(find -s "$FILES" -type f -iname "*.gif" -print0)
+rall png_optim < <(find -s "$SRC" -type f -iname "*.png" -print0)
+rall png_optim < <(find -s "$SRC" -type f -iname "*.gif" -print0)
 echo

@@ -4,3 +4,6 @@
 [submodule "lib/node-jslint-strict"]
 	path = lib/node-jslint-strict
 	url = git://github.com/jcayzac/node-jslint-strict.git
+[submodule "lib/sass"]
+	path = lib/sass
+	url = git://github.com/nex3/sass.git

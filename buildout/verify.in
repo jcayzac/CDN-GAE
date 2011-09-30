@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
-export PATH=${nodejs:path}:${buildout:directory}/lib/node-jslint-strict/bin:$PATH
+export PATH=${nodejs:path}:${buildout:directory}/lib/node-jslint-strict/bin:${buildout:directory}/lib/sass/bin:$PATH
 export NODE_PATH=${buildout:directory}/lib/node-jslint-strict
 
 cd "${buildout:directory}"
-FILES="app/files"
+SRC="app/src"
 
 rall() {
 	CMD="$1"
@@ -13,9 +13,25 @@ rall() {
 	while IFS= read -r -d '' FN; do $CMD "$FN" $@; done
 }
 
-lint_one() {
+js_check_one() {
 	echo >&2 "Processing $1"
 	jslint "$1"
 }
 
-rall lint_one < <(find -s "$FILES" -type f -iname "*.js" -not -iname "*.min.js" -print0)
+sass_check_one() {
+    echo >&2 "Processing $1"
+    sass -Cc "$1"
+}
+
+scss_check_one() {
+    echo >&2 "Processing $1"
+    scss -Cc "$1"
+}
+
+rall js_check_one < <(find -s "$SRC" -type f -iname "*.js" -print0)
+
+if which ruby >/dev/null 2>&1
+then
+    rall sass_check_one < <(find -s "$SRC" -type f -iname "*.sass" -print0)
+    rall scss_check_one < <(find -s "$SRC" -type f -iname "*.scss" -print0)
+fi
