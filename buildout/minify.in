@@ -27,17 +27,15 @@ rall() {
 
 # SASS and SCSS
 sass_one() {
-    echo >&2 "Processing $1"
+    echo >&2 "  Compiling $1"
     OUT="$(echo "$1" | sed -e 's|\.[^\.]*$||').compiled.css"
     sass -C --unix-newlines "$1" "$OUT"
-	echo >&2 "  Created intermediate file $OUT"
 }
 
 scss_one() {
-    echo >&2 "Processing $1"
+    echo >&2 "  Compiling $1"
     OUT="$(echo "$1" | sed -e 's|\.[^\.]*$||').compiled.css"
     scss -C --unix-newlines "$1" "$OUT"
-	echo >&2 "  Created intermediate file $OUT"
 }
 
 if which ruby >/dev/null 2>&1
